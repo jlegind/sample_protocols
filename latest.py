@@ -1,4 +1,4 @@
-from nltk import RegexpTokenizer
+import nltk
 import json
 from ast import literal_eval
 #
@@ -24,7 +24,16 @@ from ast import literal_eval
 # # last_wordset = 1
 
 import copy
+import pandas as pd
 
+
+search_url = 'http://api.gbif.org/v1/dataset/search?q='
+terms = ['LTER', 'DAFOR', 'transect', 'quadrat', 'census', 'drones', 'field work']
+cols = ['field', 'term', 'datasetkey', 'accurates', 'close-enough', 'distance', 'number']
+dframe = pd.DataFrame(columns=cols)
+fields = ['title', 'description', 'samplingDescription']
+dct = {}
+dct['number'] = 0
 d1 =  {"samplingDescription": {
     "studyExtent": "The idea is to subsample about 3% of the land area of South Northumberland and Durham ",
     "sampling": "The volunteer observers were asked to...\n1. Record all the species that they could identify confidently.\n2. Include, planted or sown plants where they are an important feature of the landscape, but to note when they are planted.\n3. To try to visit the full range of habitats within the grid square.\n4. When they had finished surveying the square, they were asked to assign a DAFOR letter to each species you found. The DAFOR scale is D = Dominant; A = Abundant, F = Frequent, O = Occasional, R = Rare.",
@@ -34,35 +43,48 @@ d1 =  {"samplingDescription": {
     ]}
   }
 
-def isstring(rson):
+def isstring(rson, term, field, dct, datasetkey):
     print(rson)
-    # tok = RegexpTokenizer(r'w+')
-    # res = tok.tokenize(rson)
     res = remove_chars(rson)
-    # print('res', res)
-    ct = 0
-    for w in res:
-        print(w)
-        ct += 1
-        if ct == 10:
-            break
+    for word in res:
+        sendback = test_distance(word, term, field, dct, datasetkey)
+    return sendback
 
 def remove_chars(words):
-    tok = RegexpTokenizer(r'\w+')
+    tok = nltk.RegexpTokenizer(r'\w+')
     decaf = tok.tokenize(words)
     return decaf
 
-def isdict(rson):
-    # tok = RegexpTokenizer(r'w+')
-    # res = tok.tokenize(rson)
-    # ct = 0
-    for w in rson:
-        print(w)
-        # ct += 1
-        # if ct == 10:
-        #     break
+def test_distance(word, kword, field, dct, datasetkey):
+    print('///RUNNING TEST_DISTANCE()')
+    if 'number' not in dct.keys():
+        dct['number'] = 0
+    dct['field'] = field
+    word = word
+    if isinstance(word, (list))== False:
+        word = word.lower()
 
-def parson(son):
+    print(word, "######test_distance##")
+    print('currentt dict: ', dct)
+    dist = nltk.edit_distance(kword, word)
+    print(word, dist)
+    if dist == 1:
+        dct['close-enough'] = word
+        dct['distance'] = dist
+        dct['number'] += 1
+        print("--success--\n ", word)
+    if dist == 0:
+        dct['datasetkey'] = datasetkey
+        dct['accurates'] = word
+        dct['distance'] = dist
+        if dct['datasetkey'] == datasetkey and dct['term'] == kword and dct['field'] == field:
+            dct['number'] += 1
+        print("--success--\n ", word)
+    if dct['number'] > 0:
+        return dct
+
+def parson(son, term, field, dct, datasetkey):
+    dct['term'] = term
     if isinstance(son, (dict)):
         print('isDict()')
         for k in son.items():
@@ -73,32 +95,23 @@ def parson(son):
             if ll > 1:
                 rson = k[1]
                 print(type(rson))
-                parson(k[1])
+                parson(k[1], term, field, dct, datasetkey)
             else:
                 print(rson.keys())
                 # res = remove_chars()
 
     elif isinstance(son, (str)):
         print('NOT DICT - maybe string? ', type(son))
+        res = isstring(son, term, field, dct, datasetkey)
 
-        res = remove_chars(son)
         print(res)
+        return res
     else:
         print('LIST -- maybe do something about that')
         for j in son:
             out = remove_chars(j)
             print('list item: ', out)
 
-parson(d1)
-                # print(k[1])
-        # print(k, son['k'])
-        #
-        # for j in v.items():
-        #     print(type(j))
-        #     print(j[0])
-        #     if isinstance(j[1], (str)):
-        #         isstring(j[1])
-        #     # else:
 
-# parson(d1)
-
+news = parson(d1, 'dafor', "samplingDescription", dct, '5d784d06-fa1d-4f00-8cdc-663d04d26061')
+print(news)
