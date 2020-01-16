@@ -80,6 +80,7 @@ def test_distance(word, kword, field, dct, datasetkey):
     dist = nltk.edit_distance(kword, word)
     print(word, dist)
     if dist == 1:
+        dct['datasetkey'] = datasetkey
         dct['close-enough'] = word
         dct['distance'] = dist
         dct['number'] += 1
@@ -104,10 +105,10 @@ def parson(son, term, field, dct, datasetkey):
     if isinstance(son, (dict)):
         print('isDict()')
         for k in son.items():
-            print(k, 'and type: ', type(k))
+            # print(k, 'and type: ', type(k))
             print('Field ', k[0])
             if k[0] != field:
-                print('NOT term')
+                # print('NOT term')
                 continue
             else:
                 print('TERM iss')
@@ -144,76 +145,31 @@ dlist = []
 
 for t in terms:
     res = term_api_search(search_url, t)
+    ct = 0
     for j in res['results']:
+        ct += 1
+        if ct > 10: break
         # print(j)
         print(j['key'])
         datasetkey = j['key']
         for f in fields:
             lookup = dataset_metadata_lookup(datasetkey, f)
-
             print(lookup)
-    break
-    news = parson(d2, t, f, dct, 'a855a185-cf36-4b06-89f6-bbbce2e2805d')
-    print('str yield generator')
-    for j in news:
-    # while
-        print('inside generator')
-        print('gg ', j)
-        if j['number'] != 0:
-            print('not zero')
-            dlist.append(copy.copy(j))
-        print(dlist)
+            newdct = {}
+            news = parson(lookup, t, f, newdct, datasetkey)
+            print('str yield generator')
+            # ct = 0
+            for j in news:
+            # while
+                print('inside generator')
+                print('gg ', j)
+                if j['number'] != 0:
+                    print('not zero')
+                    dlist.append(copy.copy(j))
+                print(dlist)
+                ct += 1
 
-print('final list: ', dlist)
 
-# def dataset_api_search(api, term, field):
-#     print('###dataset_api_search##')
-#     field = field
-#     kword = term.lower()
-#     # dct = dict()
-#     search = api+'{}{}'.format(term, '&limit=200')
-#     print(search)
-#     response = requests.get(search)
-#     rson = response.json()
-#     results = rson['results']
-#     print('RR -- ', results)
-#     lookup = ''
-#     # g = dict()
-#     # returnlist = []
-#     for j in results:
-#         print('TYPE', type(j))
-#         print(j['key'])
-#         try:
-#             print('####FIELD TITLE###', field, type(j))
-#             datasetkey = j['key']
-#             lookup = dataset_metadata_lookup(datasetkey, field)
-#             # print('tryy lookupp', lookup)
-#             print(lookup[field], "%%")
-#         except KeyError:
-#             print('No matching key!!!', datasetkey)
-#         # dct=dict()
-#         dct['field'] = field
-#         dct['term'] = kword
-#         datasetkey = j['key']
-#         print("now dict --- ", dct)
-#             # try:
-#         print('after dataset_metadata_lookup loop/// ')
-#         try:
-#             res =  lookup[field]
-#         except KeyError:
-#             print('After lookup KEYERROR')
-#             continue
-#         print('RESS:  ', res)
-#         print('IS DICT??:  ', type(res))
-#
-#         if isinstance(res, (dict)):
-#             print("IS A DICT() ")
-#             # for v in res:
-#             #     tok = nltk.RegexpTokenizer(r'\w+')
-#             #     if isinstance(v, (list)):
-#             #         v = ''.join(j for j in v)
-#             #     out = tok.tokenize(v)
-#             #     print('THISIS OUT:::', out)
-#             for k, val in res.items():
-#
-#
+for item in dlist:
+    print('final list: ', item)
+
