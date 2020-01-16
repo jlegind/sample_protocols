@@ -21,7 +21,6 @@ d1 =  {"samplingDescription": {
       "Observations were digitised using Mapmate (http://www.mapmate.co.uk/)."
     ]}
   }
-
 def gbif_api(api, term):
     surl = api+'{}'.format(term)
     print(surl)
@@ -29,16 +28,6 @@ def gbif_api(api, term):
     rson = response.json()
     # results = rson['results']
     return(rson)
-
-def dataset_metadata_lookup(datasetkey, field, api='http://api.gbif.org/v1/dataset/'):
-    print('RUNNING DATASET METADATA LOOKUP********')
-    url = api+'{}'.format(datasetkey)
-    res = gbif_api(api, datasetkey)
-    try:
-        res = res[field]
-        return res
-    except KeyError as e:
-        print('After metadata lookup -- KEYERROR')
 
 def isstring(rson, term, field, dct, datasetkey):
     print(rson)
@@ -95,6 +84,12 @@ def test_distance(word, kword, field, dct, datasetkey):
         print('biggger than zero')
         return dct
 
+def dataset_metadata_lookup(datasetkey, field, api='http://api.gbif.org/v1/dataset/'):
+    print('RUNNING DATASET METADATA LOOKUP********')
+    url = api+'{}'.format(datasetkey)
+    res = gbif_api(api, datasetkey)
+    return res
+
 def parson(son, term, field, dct, datasetkey):
     print('###PARSON STARTED')
     dct['term'] = term
@@ -147,11 +142,7 @@ for t in terms:
     for j in res['results']:
         # print(j)
         print(j['key'])
-        datasetkey = j['key']
-        for f in fields:
-            lookup = dataset_metadata_lookup(datasetkey, f)
-
-            print(lookup)
+        
     break
     news = parson(d2, t, f, dct, 'a855a185-cf36-4b06-89f6-bbbce2e2805d')
     print('str yield generator')
