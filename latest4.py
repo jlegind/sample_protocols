@@ -7,7 +7,7 @@ import responses
 
 search_url = 'http://api.gbif.org/v1/dataset/search?q='
 # terms = ['LTER', 'DAFOR', 'transect', 'quadrat', 'census', 'drones', 'field work']
-terms = ('quadrat',)
+terms = ('lter',)
 cols = ['field', 'term', 'datasetkey', 'accurates', 'close-enough', 'distance', 'number']
 dframe = pd.DataFrame(columns=cols)
 fields = ['title', 'description', 'samplingDescription']
@@ -44,8 +44,14 @@ def isstring(rson, term, field, datasetkey):
     print('iss dct', dct)
     print('isstrterm: ', term)
     res = remove_chars(rson)
+    print('lenres = ', len(res))
+    print(res)
+    sendback = []
     for word in res:
-        sendback = test_distance(word, term, field, datasetkey)
+        print(word)
+        feedback = test_distance(word, term, field, datasetkey)
+        sendback.append(feedback)
+        print('sendback: ', sendback)
     return sendback
 
 def remove_chars(words):
@@ -66,59 +72,31 @@ def term_api_search(api, term):
 def test_distance(word, kword, field, datasetkey):
     print('///RUNNING TEST_DISTANCE() on field ', field)
     #print('len dct: {}'.format(len(dct), dct))
-    # for j in dct:
-    #     # print(dct)
-    #     inside = dct[j]
-    #     print('inside type ', type(inside), inside)
-    #     for k, v in inside.items():
-    #         # print(k)
-    #         if k == 'term': inside[k] = kword
-    #         if k == 'field': inside[k] = field
-    #         if k == 'datasetkey': inside[k] = datasetkey
-    # print('after forkv: ', dct)
-    # accdct = dct['accurate']
-    # close_dict = dct['close_dict']
-    # if 'number' not in dct.keys():
-    #     print('not in dctkeys')
-    #     #dct['number'] = 0
-    # dct['field'] = field
-    # cdct = {}
-    # cdct['term'] = kword
-    # cdct['field'] = field
-    # cdct['number'] = 0
 
     if isinstance(word, (list))== False:
         word = word.lower()
 
     print(word, kword, "######test_distance##")
-    # print('currentt dict: ', dct)
+
+    rt = []
     dist = nltk.edit_distance(kword, word)
     print(word, dist)
     if dist == 1:
-        # cdct = close_dict
-        # cdct['datasetkey'] = datasetkey
-        # cdct['close-enough'] = word
-        # cdct['distance'] = dist
-        # if cdct['datasetkey'] == datasetkey and cdct['term'] == kword and cdct['field'] == field:
-        #     cdct['number'] += 1
-        print("--success--\n ", word)
-        # print('copy dict: ', cdct)
-        close_pair = (kword, word, dist, field, datasetkey)
-        return close_pair
-    if dist == 0:
-        # accdct['datasetkey'] = datasetkey
-        # accdct['accurates'] = word
-        # accdct['distance'] = dist
-        # if accdct['datasetkey'] == datasetkey and accdct['term'] == kword and accdct['field'] == field:
-        #     accdct['number'] += 1
-        print("--success--\n ", word)
-        acc_pair = (kword, word, dist, field, datasetkey)
-        return acc_pair
-    # print('before return', dct)
-    # if dct['number'] > 0:
-    #     print('biggger than zero')
 
-    #return dct
+        print("--success--close\n ", word)
+        # close_pair = (kword, word, dist, field, datasetkey)
+        tmp = [kword, word, dist, field, datasetkey]
+        rt.append(tmp)
+        # return close_pair
+
+    elif dist == 0:
+
+        print("--success--accurate\n ", word)
+        acc_pair = [kword, word, dist, field, datasetkey]
+        rt.append(acc_pair)
+        print('acc pair: ', acc_pair)
+        # return acc_pair
+    return rt
 
 def parson(son, term, field, dct, datasetkey):
     print('###PARSON STARTED with term: ', term, datasetkey)
@@ -148,7 +126,7 @@ def parson(son, term, field, dct, datasetkey):
                 print(rson)
                 print('!type: ', type(rson))
                 if isinstance(rson, (list)):
-                    islist(rson)
+                    pass
                 else:
                     print('Yield in parson()')
                     # yield from parson(rson, term, field, dct, datasetkey)
@@ -169,13 +147,13 @@ def parson(son, term, field, dct, datasetkey):
         print('LIST -- maybe do something about that')
 
 search_url = 'http://api.gbif.org/v1/dataset/search?q='
-dlist = []
+
 #A break pad !!!
-limiter = 12
+limiter = 10
 
 thedct = {"accurate":{'term': '', 'field': '', 'number': 0, 'datasetkey': '', 'accurates': '', 'distance': None},
           "close_dict":{'term': '', 'field': '', 'number': 0, 'datasetkey': '', 'accurates': '', 'distance': None}}
-
+d_list = []
 for t in terms:
     res = term_api_search(search_url, t)
     ct = 0
@@ -203,6 +181,15 @@ for t in terms:
                 distance = n[2]
                 field = n[3]
                 print('{} has {} in field: {} that matches {} at distance {}'.format(datasetkey, term, field, word, distance))
+                # thedct = {"accurate": {'term': '', 'field': '', 'number': 0, 'datasetkey': '', 'accurates': '',
+                #                        'distance': None},
+                #           "close_dict": {'term': '', 'field': '', 'number': 0, 'datasetkey': '', 'accurates': '',
+                #                          'distance': None}}
+                dct_for_app = {'dataset':datasetkey, 'field': field, 'term': term,
+                               'target word': word, 'distance': distance
+                               }
+
+                d_list.append(dct_for_app)
                 # (kword, word, dist, field, datasetkey)
                 #for d, elem in n.items():
                 # for key in n:
@@ -219,10 +206,10 @@ for t in terms:
                 #     if n['number'] != 0:
                 #         print('not zero')
                 #         dlist.append(copy.copy(j))
-                print(dlist)
+                print(d_list)
                 ct += 1
 
-print('longlist: ', dlist)
-for item in dlist:
-    print('final list: ', item)
+print('longlist: ', d_list)
+final_df = pd.DataFrame(d_list)
+print(final_df.to_string())
 
