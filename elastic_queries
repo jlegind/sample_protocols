@@ -1,0 +1,95 @@
+GET dataset/_search/?_source=title,description&_source_excludes=geographicCoverages
+
+{
+    "from": 0,
+    "size": 20,
+    "query": {
+                    "match": {
+                        "description": {
+                            "query": "braun blanquet",
+                            "operator": "and",
+                            "prefix_length": 0,
+                            "max_expansions": 50,
+                            "fuzzy_transpositions": true,
+                            "lenient": false,
+                            "zero_terms_query": "NONE",
+                            "auto_generate_synonyms_phrase_query": true
+                        }
+                    }
+                }
+
+
+
+
+}
+
+GET dataset/_search/?_source=title,description&_source_excludes=geographicCoverages
+{
+    "query": {
+                    "match_phrase": {
+                      "description": {"query": "braun blanquet", "slop": 0}
+
+                                            }
+                }
+}
+
+        ##bad ass :::
+GET dataset/_search
+{
+  "_source": {
+		"includes": ["title", "description", "_score", "samplingDescription.sampling"],
+		"excludes": ["geographicCoverages"]
+	}
+	,
+
+  "query": {
+    "multi_match": {
+      "query": "braun Blanquet",
+      "type": "phrase",
+      "fields": ["samplingDescription.sampling"]
+    }
+  }
+}
+
+
+{
+
+  "_source": {
+		"includes": ["title", "description", "_score", "samplingDescription.sampling"],
+		"excludes": ["geographicCoverages"]
+	}
+	,
+    "from": 0,
+    "size": 200,
+    "query": {
+        "bool": {
+            "should": [
+                {
+                    "match": {
+                        "title": {
+                            "query": "Braun",
+                            "operator": "and",
+                            "prefix_length": 0,
+                            "max_expansions": 50,
+                            "fuzzy_transpositions": true,
+                            "lenient": false,
+                            "zero_terms_query": "NONE",
+                            "auto_generate_synonyms_phrase_query": true,
+                            "boost": 1
+                        }
+                    }
+                },
+                {
+                    "match_phrase": {
+                        "description": "Blanquet"
+                    }
+                },
+                {"match_phrase": {
+                  "samplingDescription.sampling": "braun blanquet"
+                }
+                }
+            ],
+            "adjust_pure_negative": true
+        }
+    }
+}
