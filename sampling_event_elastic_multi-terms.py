@@ -18,17 +18,24 @@ def srch(body):
     return res
 
 protocols = ['sampling','trap','transect','plot','survey', 'surveys','netting','census','trawl']
-shoulds = []
-for term in protocols:
-    should = {
-              "match_phrase": {
-                "description": term
-              }
-            }
-    shoulds.append(should)
 
+def condition(terms):
+    '''
+    Returns a construct of multiple 'should' conditions
+    :param terms: in our case a list of sample event/protocol terms
+    :return: the construct to be inserted into the payload body
+    '''
+    shoulds = []
+    for term in protocols:
+        should = {
+                  "match_phrase": {
+                    "description": term
+                  }
+                }
+        shoulds.append(should)
+    return shoulds
 # print(shoulds)
-conditions = shoulds
+conditions = condition(protocols)
 
 payload = {
   "_source": {
@@ -68,13 +75,14 @@ res = srch(payload)
 ore = res['hits']['hits']
 # print('ORE ---', type(ore), ore)
 # print(ore)
-samplingDescription = ''
+# samplingDescription = ''
 rows = []
 dir = r'C:/Users/bxq762/Dropbox/Sample event/'
 # tabfile = open(dir+'braunblanquet.csv', mode="w")
 # tag_writer = csv.writer(tabfile, delimiter='\t')
 def clean(term):
     #For cleaning html and linebreaks from text strings
+    #Good for keyword and free text fields
     soup = BeautifulSoup(term, features="html.parser")
     res = soup.get_text()
     tmp = res.split()
@@ -85,30 +93,35 @@ def clean(term):
 # replace_pt = re.compile(pattern)
 
 def highlight(txt, pattern):
+    '''
+    Gets the results of the highlighted text.
+    :param txt: text to be searched
+    :param pattern: regex pattern
+    :return: a list of terms that were matched for a particular string
+    '''
     print('txt =={} \n and pattern : {}'.format(txt, pattern))
     matched = []
-    # fields = ['title', 'description']
+
     fields = ['description']
     print('txt type is : ', type(txt), '  ', txt)
     print(txt)
     item_list = [txt[x] for x in fields]
-    item_list_conc = item_list[0]\
-                     # +item_list[1]
+    item_list_conc = item_list[0]
     one_list = '. '.join(item_list_conc)
     print('ITEM LIST here = ',len(one_list), type(one_list), one_list)
-    # item_list.append(item)
-    # print('item list len:{}'.format(len(item_list)), item_list[0])
-    # print('item list 0 {}'.format(item_list[0]))
-    # for matchedtext in one_list:
-    print('mathcedetexxxxxtttt: len: {} + text: {}'.format(len(one_list), one_list))
+
+    print('mathced texxxxxtttt: len: {} + text: {}'.format(len(one_list), one_list))
     hit = re.findall(pattern, one_list)
     hit = [x.lower() for x in hit]
     print('#hit##', hit)
     matched.append(hit)
     print('type matched?? : ', type(matched), matched)
+
     res = list(set(matched[0]))
+    #Set returns a unique 'set' which must be cast as list
     return res
 
+#write a function taking dir+name + fieldnames list
 with open(dir+'/multi_test.csv', 'w', newline='', encoding='utf-8') as sample_event_file:
     fieldnames = ['datasetkey', 'title', 'description', 'protocol_terms', 'score']
     writer = csv.DictWriter(sample_event_file, fieldnames=fieldnames, delimiter='\t')
