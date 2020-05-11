@@ -17,7 +17,7 @@ def srch(body):
 
     return res
 
-protocols = ['sampling','trap','transect','plot','survey','netting','census','trawl']
+protocols = ['sampling','trap','transect','plot','survey', 'surveys','netting','census','trawl']
 shoulds = []
 for term in protocols:
     should = {
@@ -36,7 +36,7 @@ payload = {
 		"excludes": ["geographicCoverages", "samplingDescription.sampling"]
 	}
 	,
-    "size": 2010,
+    "size": 2000,
   "query" : {
     "bool": {
       "should":
@@ -102,13 +102,14 @@ def highlight(txt, pattern):
     # for matchedtext in one_list:
     print('mathcedetexxxxxtttt: len: {} + text: {}'.format(len(one_list), one_list))
     hit = re.findall(pattern, one_list)
+    hit = [x.lower() for x in hit]
     print('#hit##', hit)
     matched.append(hit)
     print('type matched?? : ', type(matched), matched)
-    res = set(matched[0])
+    res = list(set(matched[0]))
     return res
 
-with open(dir+'/multi.csv', 'w', newline='', encoding='utf-8') as sample_event_file:
+with open(dir+'/multi_test.csv', 'w', newline='', encoding='utf-8') as sample_event_file:
     fieldnames = ['datasetkey', 'title', 'description', 'protocol_terms', 'score']
     writer = csv.DictWriter(sample_event_file, fieldnames=fieldnames, delimiter='\t')
     writer.writeheader()
