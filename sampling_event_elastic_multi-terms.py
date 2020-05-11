@@ -165,32 +165,11 @@ with open(dir+'/multi_test.csv', 'w', newline='', encoding='utf-8') as sample_ev
                 samplingDescription = clean(samplingDescription)
                 print(type(samplingDescription))
 
-            highs = []
-
-            # highs.append(hl)
-            # matched = []
-            # for matchedtext in re.findall(r'(?<=<em class="gbifHl">).*?(?=</em>)', description):
-            #     matched.append(matchedtext)
-            # terms = list(set(matched))
-            # print('t#e#r#m#s# :: ', hl)
-            # samplingDescription = replace_pt.sub("", samplingDescription)
         except KeyError as e:
             print('keyerror ¤¤¤¤¤¤¤¤')
             print(e)
             continue
 
-        # if datasetkey == 'e567684d-9998-4604-9790-b0ac00e090c1':
-        #     print('desc#####: ', description)
-        #     break
-
-        # singlerow.extend([title, description, samplingDescription, score])
-        # rows.append(singlerow)
-        # ll = len(description)
-    #
-    # hit = extract_values(res, '_source')[0]
-    #     print('datasetkey:{}\n title:{}\ndesc: {}\nsampling: {}\n protocol={}\nscore={}'.format(datasetkey, title,description,samplingDescription,hl,score))
-        # print(rows)
-        # break
 dkeys_list = []
 def predominant_sign(data):
     signs = Counter(k['_id'] for k in data if k.get('_id'))
