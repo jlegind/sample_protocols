@@ -173,7 +173,7 @@ def run_ES_SE_search(filename, protocols):
                 fieldnames_error = ['_id', '_score', '_source']
                 errow = {'_id':gold['_id'], '_score':gold['_score'], '_source':gold['_source']}
                 keys = gold.keys()
-                print('IN Kerror ==  == ', type(keys), keys)
+                
                 kwriter = csv.DictWriter(kerrorfile, fieldnames=keys, delimiter='\t')
                 kwriter.writerow(errow)
 
