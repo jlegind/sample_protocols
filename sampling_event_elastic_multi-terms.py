@@ -123,6 +123,7 @@ def run_ES_SE_search(filename, protocols):
     body = make_body(conditions)
     res = srch(body)
     ore = res['hits']['hits']
+    kerrorfile = open(dir+'/key_errors.csv', 'w', newline='', encoding='utf-8')
     with open(dir+'/multi_testTEST2.csv', 'w', newline='', encoding='utf-8') as sample_event_file:
         fieldnames = ['datasetkey', 'title', 'description', 'protocol_terms', 'score']
         writer = csv.DictWriter(sample_event_file, fieldnames=fieldnames, delimiter='\t')
@@ -169,6 +170,13 @@ def run_ES_SE_search(filename, protocols):
             except KeyError as e:
                 print('keyerror ¤¤¤¤¤¤¤¤')
                 print(e)
+                fieldnames_error = ['_id', '_score', '_source']
+                errow = {'_id':gold['_id'], '_score':gold['_score'], '_source':gold['_source']}
+                keys = gold.keys()
+                print('IN Kerror ==  == ', type(keys), keys)
+                kwriter = csv.DictWriter(kerrorfile, fieldnames=keys, delimiter='\t')
+                kwriter.writerow(errow)
+
                 continue
 
 protocols = ['sampling','trap','transect','plot','survey', 'surveys','netting','census','trawl']
