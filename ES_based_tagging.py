@@ -49,7 +49,7 @@ for j in ddata:
 #             dkey = j['datasetkey']
 #             print(dkey)
 #             chapi.add_machineTag(dkey, 'gbif.org', 'sampling event', protocol,
-#                                  'jlegind', 'mussimus', api="http://api.gbif.org/v1/dataset/")
+#                                  'user', 'password', api="http://api.gbif.org/v1/dataset/")
 #             # break
 #         # else:
 #             # print('tagging dataset ', j['datasetkey'], j['comment'])
